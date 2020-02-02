@@ -1,0 +1,181 @@
+---
+title: "Data Visualization"
+date: "`r format(Sys.time(), '%B %Y')`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warings = FALSE)
+library(plotly)
+library(cluster)
+```
+
+
+```{r fig0,message=F, warning=F,echo=FALSE}
+###########################################################
+# Import data
+glass = read.csv('datasets/4_clear_data_overall.csv', header = TRUE)
+dat = glass[ ,1:5]
+
+###########################################################
+# Set display options
+template = paste('SiO2: %{x:.2f}%\n', 'MgO: %{y:.2f}%\n', 
+                 'CaO: %{z:.2f}%\n', 'Al2O3: %{text:.2f}%')
+
+axx = list(title = "SiO2 %")
+axy = list(title = "MgO %")
+axz = list(title = "CaO %")
+
+###########################################################
+# Plot figure
+dat %>% plot_ly() %>%
+  add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+            marker = list(color = ~SiO2, size = 3, colorbar=list(title='Al2O3 %'),
+                          colorscale='Viridis'), 
+            text = dat$Al2O3,hoverinfo="x+y+z+text", hovertemplate = template)%>%
+  layout(scene = list(xaxis=axx,yaxis=axy,zaxis=axz, aspectmode='cube'),
+         title = "Compositions", showlegend = F)
+
+```
+
+
+```{r fig1,message=F, warning=F,echo=FALSE}
+###########################################################
+# Import data
+glass = read.csv('datasets/4_clear_data_overall.csv', header = TRUE)
+dat = glass[ ,1:5]
+
+###########################################################
+# Set display options
+template = paste('SiO2: %{x:.2f}%\n', 'MgO: %{y:.2f}%\n', 
+                 'CaO: %{z:.2f}%\n', 'Al2O3: %{text:.2f}%')
+
+axx = list(title = "SiO2 %")
+axy = list(title = "MgO %")
+axz = list(title = "CaO %")
+
+###########################################################
+# Plot figure
+dat %>% plot_ly() %>%
+  add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+            marker = list(color = ~Tliq.C, size = 3, colorbar=list(title='Tliq ˚C'), colorscale='Jet'), 
+            text = dat$Al2O3, hoverinfo="x+y+z+text", hovertemplate = template)%>%
+  layout(scene = list(xaxis=axx,yaxis=axy,zaxis=axz, aspectmode='cube'), 
+         title = "Liquidus Temperature", showlegend = F)
+```
+
+
+```{r fig2,message=F, warning=F,echo=FALSE}
+###########################################################
+# Import data
+glass = read.csv('datasets/4_clear_data_overall.csv', header = TRUE)
+
+ncluster = 10
+data_hc = glass[, 1:4]
+dissimilar = daisy(data_hc)
+hc_complete_raw = hclust(dissimilar, method = "complete")
+cluster_idx = cutree(hc_complete_raw, ncluster)
+
+dat = glass[ ,1:5]
+dat$type = as.factor(cluster_idx)
+
+# Import Crystal Compounds data
+datt =  read.csv('datasets/4_Ca-Mg-Al-Si-O_info.csv', header = TRUE)
+datt = datt[,11:14]
+datt = datt/rowSums(datt)*100
+
+###########################################################
+# Set buttom options
+for(i in 1:10){
+  names = paste0('c',i)
+  dat[names] = rep(0,nrow(dat))
+  dat[names][cluster_idx == i,] = 1
+  dat[names] = as.factor(dat[names][,1])
+}
+
+axx = list(title = "SiO2 %")
+axy = list(title = "MgO %")
+axz = list(title = "CaO %")
+
+buttoms = list()
+for(i in 1:10){
+    buttoms[[i]] = list(
+    label =  paste0('Subset ',i),
+    method = "update",
+    args = list(list(visible = c((1:10)==i, T))))
+}
+
+updatemenus = list(list(active = -1, type = 'buttons', buttons = buttoms))
+
+###########################################################
+# Plot figure
+dat %>% plot_ly() %>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c1, size = 3), name="c1", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c2, size = 3), name="c2", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c3, size = 3), name="c3", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c4, size = 3), name="c4", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c5, size = 3), name="c5", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c6, size = 3), name="c6", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c7, size = 3), name="c7", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c8, size = 3), name="c8", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c9, size = 3), name="c9", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+              marker = list(color = ~c10, size = 3), name="c10", hoverinfo="none", showlegend = F)%>%
+    add_trace(x = ~datt[,1], y = ~datt[,3], z = ~datt[,2], type="scatter3d", mode="markers",
+              marker = list(size = 5, color = 'blue'), name="Crystal Compounds", hoverinfo="none", showlegend = T) %>%
+    layout(scene = list(xaxis=axx,yaxis=axy,zaxis=axz, aspectmode='cube'),
+           title = "Choose One Subset",updatemenus = updatemenus, showlegend = T)
+```
+
+
+```{r fig3,message=F, warning=F,echo=FALSE}
+###########################################################
+# Import data
+glass = read.csv('datasets/4_clear_data_overall.csv', header = TRUE)
+
+ncluster = 10
+data_hc = glass[, 1:4]
+dissimilar = daisy(data_hc)
+hc_complete_raw = hclust(dissimilar, method = "complete")
+cluster_idx = cutree(hc_complete_raw, ncluster)
+
+dat = glass[ ,1:5]
+dat$type = as.factor(cluster_idx)
+
+# Import Crystal Compounds data
+datt =  read.csv('datasets/4_Ca-Mg-Al-Si-O_info.csv', header = TRUE)
+datt = datt[,11:14]
+datt = datt/rowSums(datt)*100
+
+###########################################################
+# Set display options
+template = paste('SiO2: %{x:.2f}%\n', 'MgO: %{y:.2f}%\n', 
+                 'CaO: %{z:.2f}%\n', 'Al2O3: %{text:.2f}%')
+
+axx = list(nticks = 10,range = c(0,100), title = "SiO2 %")
+axy = list(nticks = 10,range = c(0,100), title = "MgO %")
+axz = list(nticks = 10,range = c(0,100), title = "CaO %")
+
+###########################################################
+# Plot figure
+dat %>% plot_ly() %>%
+  add_trace(x = ~SiO2, y = ~MgO, z = ~CaO, type="scatter3d", mode="markers",
+            marker = list(color = ~type, size = 3, colorscale='Rainbow', opacity = 0.8), 
+            text = dat$Al2O3, hoverinfo="x+y+z+text", hovertemplate = template)%>%
+  add_trace(x = ~datt[,1], y = ~datt[,3], z = ~datt[,2], type="scatter3d", mode="markers",
+            marker = list(size = 5, color = 'brown'), 
+            text = datt[,4], hoverinfo="x+y+z+text", hovertemplate = template, showlegend = FALSE)%>% 
+  layout(scene = list(xaxis=axx,yaxis=axy,zaxis=axz, aspectmode = 'cube'),
+         title = "10 Subsets & 21 Crystal Compounds")
+```
+
